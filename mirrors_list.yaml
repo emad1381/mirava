@@ -56,12 +56,6 @@ mirrors:
       - Ubuntu
       - Debian
 
-  - name: Rasanegar
-    url: https://mirror.rasanegar.com
-    description: Fastest Ubuntu mirror in Iran with exceptional speed
-    packages:
-      - Ubuntu
-      - CentOS
 
   - name: Ubuntu IR Archive
     url: https://ir.archive.ubuntu.com
@@ -164,20 +158,71 @@ mirrors:
     packages:
       - Ubuntu
 
-  - name: LinuxMirrors
-    url: https://repo.linuxmirrors.ir
-    description: LinuxMirrors repository
-    packages:
-      - Ubuntu
-
-  - name: IranRepo
-    url: https://iranrepo.ir
-    description: IranRepo mirror service
-    packages:
-      - Ubuntu
 
   - name: KimiaHost
     url: https://ubuntu-mirror.kimiahost.com
     description: KimiaHost Ubuntu mirror
     packages:
       - Ubuntu
+
+  # International Mirrors (Backup when international connectivity available)
+  # Neighboring Countries - Closest to Iran
+  - name: Armenia (AsNet)
+    url: https://mirrors.asnet.am
+    description: Fast mirror in Armenia - closest neighbor to Iran
+    packages:
+      - Ubuntu
+      - Debian
+
+  - name: Azerbaijan DataCenter
+    url: https://mirror.datacenter.az
+    description: High-speed mirror in Azerbaijan
+    packages:
+      - Ubuntu
+      - Debian
+
+  - name: Turkey Ulakbim
+    url: https://ftp.ulakbim.gov.tr
+    description: Turkish government mirror - reliable and fast
+    packages:
+      - Ubuntu
+      - Debian
+
+  - name: Russia Yandex
+    url: https://mirror.yandex.ru
+    description: Yandex mirror in Russia - very fast CDN
+    packages:
+      - Ubuntu
+      - Debian
+      - CentOS
+
+  # European Premium Mirrors
+  - name: OVH France
+    url: https://ubuntu.mirrors.ovh.net
+    description: OVH high-performance CDN - one of the fastest globally
+    packages:
+      - Ubuntu
+
+  - name: Germany Ubuntu
+    url: https://de.archive.ubuntu.com
+    description: Official German Ubuntu mirror
+    packages:
+      - Ubuntu
+
+  # Asia Premium
+  - name: China Tsinghua
+    url: https://mirrors.tuna.tsinghua.edu.cn
+    description: Tsinghua University mirror - fastest in Asia
+    packages:
+      - Ubuntu
+      - Debian
+      - CentOS
+      - PyPI
+      - npm
+
+  - name: Hong Kong CUHK
+    url: https://mirror.cse.cuhk.edu.hk
+    description: Chinese University of Hong Kong mirror
+    packages:
+      - Ubuntu
+      - Debian
