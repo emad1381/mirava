@@ -166,63 +166,123 @@ mirrors:
       - Ubuntu
 
   # International Mirrors (Backup when international connectivity available)
-  # Neighboring Countries - Closest to Iran
-  - name: Armenia (AsNet)
-    url: https://mirrors.asnet.am
-    description: Fast mirror in Armenia - closest neighbor to Iran
-    packages:
-      - Ubuntu
-      - Debian
-
-  - name: Azerbaijan DataCenter
-    url: https://mirror.datacenter.az
-    description: High-speed mirror in Azerbaijan
-    packages:
-      - Ubuntu
-      - Debian
-
-  - name: Turkey Ulakbim
-    url: https://ftp.ulakbim.gov.tr
-    description: Turkish government mirror - reliable and fast
-    packages:
-      - Ubuntu
-      - Debian
-
+  # Only fastest and most reliable mirrors included
+  
+  # Russia - Closest working international mirror
   - name: Russia Yandex
     url: https://mirror.yandex.ru
-    description: Yandex mirror in Russia - very fast CDN
+    description: Yandex CDN mirror - very fast and reliable
     packages:
       - Ubuntu
       - Debian
       - CentOS
+      - Manjaro
 
-  # European Premium Mirrors
-  - name: OVH France
-    url: https://ubuntu.mirrors.ovh.net
-    description: OVH high-performance CDN - one of the fastest globally
-    packages:
-      - Ubuntu
-
-  - name: Germany Ubuntu
-    url: https://de.archive.ubuntu.com
-    description: Official German Ubuntu mirror
-    packages:
-      - Ubuntu
-
-  # Asia Premium
-  - name: China Tsinghua
-    url: https://mirrors.tuna.tsinghua.edu.cn
-    description: Tsinghua University mirror - fastest in Asia
+  # Germany - Premium mirrors (multiple servers)
+  - name: Germany GWDG
+    url: https://ftp.gwdg.de/pub/linux
+    description: Göttingen University mirror - one of Germany's fastest
     packages:
       - Ubuntu
       - Debian
-      - CentOS
-      - PyPI
-      - npm
+      - Manjaro
 
-  - name: Hong Kong CUHK
-    url: https://mirror.cse.cuhk.edu.hk
-    description: Chinese University of Hong Kong mirror
+  - name: Germany RWTH Aachen
+    url: https://ftp.halifax.rwth-aachen.de
+    description: RWTH Aachen University mirror - premium academic network
     packages:
       - Ubuntu
       - Debian
+      - Manjaro
+
+  - name: Germany TU-BS
+    url: https://ftp.rz.tu-bs.de/pub/mirror
+    description: TU Braunschweig mirror - fast and up-to-date
+    packages:
+      - Ubuntu
+      - Debian
+      - Manjaro
+
+  - name: Germany Alpix
+    url: https://mirror.alpix.eu
+    description: Alpix high-performance mirror
+    packages:
+      - Ubuntu
+      - Debian
+      - Manjaro
+
+  # Switzerland - Premium quality
+  - name: Switzerland Init7
+    url: https://mirror.init7.net
+    description: Init7 Tier-1 network mirror - extremely fast
+    packages:
+      - Ubuntu
+      - Debian
+      - Manjaro
+
+  # France - OVH alternatives
+  - name: France Eric
+    url: https://mirrors.eric.ovh
+    description: Eric OVH mirror - up-to-date and fast
+    packages:
+      - Ubuntu
+      - Debian
+      - Manjaro
+
+  - name: France Free
+    url: https://ftp.free.org/mirrors
+    description: Free.fr mirror - large ISP with good speed
+    packages:
+      - Ubuntu
+      - Debian
+
+  # Northern Europe - Excellent connectivity
+  - name: Sweden Lysator
+    url: https://ftp.lysator.liu.se/pub
+    description: Lysator mirror - very reliable Swedish mirror
+    packages:
+      - Ubuntu
+      - Debian
+      - Manjaro
+
+  - name: Denmark DotSrc
+    url: https://mirrors.dotsrc.org
+    description: DotSrc mirror - fast Danish academic mirror
+    packages:
+      - Ubuntu
+      - Debian
+      - Manjaro
+
+  - name: Poland PSNC
+    url: https://ftp.psnc.pl/linux
+    description: Polish Supercomputing Network - very fast
+    packages:
+      - Ubuntu
+      - Debian
+      - Manjaro
+
+  # Austria - Close to Germany
+  - name: Austria EasyName
+    url: https://mirror.easyname.at
+    description: Austrian mirror - fast and up-to-date
+    packages:
+      - Ubuntu
+      - Debian
+      - Manjaro
+
+  - name: Austria Alwyzon
+    url: https://mirror.alwyzon.net
+    description: Alwyzon CDN mirror - premium network
+    packages:
+      - Ubuntu
+      - Debian
+      - Manjaro
+
+  # Netherlands - Excellent internet infrastructure
+  - name: Netherlands Lavatech
+    url: https://manjaro.mirrors.lavatech.top
+    description: Lavatech mirror - fast Dutch mirror
+    packages:
+      - Ubuntu
+      - Debian
+      - Manjaro
