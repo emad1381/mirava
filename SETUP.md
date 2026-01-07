@@ -4,14 +4,27 @@
 
 برای اجرای این اسکریپت به ابزارهای زیر نیاز دارید:
 
-### 1. yq (YAML Parser)
-```bash
-# نصب با pip
-sudo apt update
-sudo apt install python3-pip -y
-pip3 install yq
+### 1. yq (YAML Parser Binary - NOT Python version)
 
-# یا نصب با snap
+> **مهم:** نسخه Binary از yq نیاز است، نه Python version!
+
+```bash
+# نصب yq binary از GitHub releases
+VERSION=v4.44.1  # آخرین نسخه پایدار
+BINARY=yq_linux_amd64
+
+cd /tmp
+wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY} -O yq
+chmod +x yq
+sudo mv yq /usr/local/bin/yq
+
+# تست نصب
+yq --version
+# باید خروجی: yq (https://github.com/mikefarah/yq/) version v4.x.x
+```
+
+**یا با snap:**
+```bash
 sudo snap install yq
 ```
 
