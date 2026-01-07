@@ -152,7 +152,9 @@ for idx in $(seq 0 $((TOTAL_MIRRORS - 1))); do
     path=${PACKAGE_PATHS[$package]:-}
     
     if [[ -n "$path" ]]; then
-      full_url="$base_url/$path"
+      # Remove trailing slash from base_url to prevent double slashes
+      clean_url="${base_url%/}"
+      full_url="$clean_url/$path"
       status=$(check_url "$full_url")
       
       if [[ "$status" == "200" || "$status" == "301" || "$status" == "302" ]]; then
