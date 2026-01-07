@@ -319,28 +319,210 @@ while IFS='|' read -r score mirror_name; do
   ((rank++))
 done <<< "$sorted_mirrors"
 
+# Auto-configuration function
+function configure_system_mirrors() {
+  local mirror_url=$1
+  local mirror_name=$2
+  
+  echo -e "\n${CYAN}🔧 Starting auto-configuration...${NC}\n"
+  
+  # Create backup first
+  echo -e "${BLUE}📦 Creating backup of current configuration...${NC}"
+  BACKUP_DIR="/root/.mirava_backups"
+  TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+  mkdir -p "$BACKUP_DIR"
+  
+  # Backup APT sources
+  if [[ -f "/etc/apt/sources.list" ]]; then
+    cp /etc/apt/sources.list "$BACKUP_DIR/sources.list.$TIMESTAMP"
+    echo -e "${GREEN}✅ Backed up: /etc/apt/sources.list${NC}"
+  fi
+  
+  # Configure APT (Ubuntu/Debian) if supported
+  success_count=${MIRROR_SUCCESS_COUNTS[$mirror_name]}
+  total_count=${MIRROR_TOTAL_COUNTS[$mirror_name]}
+  
+  # Get packages list for this mirror
+  for idx in $(seq 0 $((TOTAL_MIRRORS - 1))); do
+    name=$(yq e ".mirrors[$idx].name" "$MIRROR_FILE")
+    if [[ "$name" == "$mirror_name" ]]; then
+      package_count=$(yq e ".mirrors[$idx].packages | length" "$MIRROR_FILE")
+      
+      has_ubuntu=false
+      has_debian=false
+      has_pypi=false
+      has_npm=false
+      
+      for j in $(seq 0 $((package_count - 1))); do
+        package=$(yq e ".mirrors[$idx].packages[$j]" "$MIRROR_FILE")
+        [[ "$package" == "Ubuntu" ]] && has_ubuntu=true
+        [[ "$package" == "Debian" ]] && has_debian=true
+        [[ "$package" == "PyPI" ]] && has_pypi=true
+        [[ "$package" == "npm" ]] && has_npm=true
+      done
+      
+      # Configure APT if Ubuntu/Debian supported
+      if [[ "$has_ubuntu" == true ]] && [[ -f "/etc/os-release" ]]; then
+        . /etc/os-release
+        if [[ "$ID" == "ubuntu" ]]; then
+          echo -e "\n${YELLOW}⚙️  Configuring APT for Ubuntu...${NC}"
+          clean_url="${mirror_url%/}"
+          
+          # Create new sources.list
+          cat > /etc/apt/sources.list << EOF
+# Mirava Auto-Generated - $(date)
+# Mirror: $mirror_name
+# Backup: $BACKUP_DIR/sources.list.$TIMESTAMP
+
+deb $clean_url/ubuntu/ $VERSION_CODENAME main restricted universe multiverse
+deb $clean_url/ubuntu/ $VERSION_CODENAME-updates main restricted universe multiverse
+deb $clean_url/ubuntu/ $VERSION_CODENAME-security main restricted universe multiverse
+deb $clean_url/ubuntu/ $VERSION_CODENAME-backports main restricted universe multiverse
+EOF
+          
+          echo -e "${GREEN}✅ APT configured for Ubuntu ($VERSION_CODENAME)${NC}"
+          echo -e "${CYAN}   Running: apt update...${NC}"
+          apt update -qq && echo -e "${GREEN}✅ APT update successful${NC}" || echo -e "${RED}⚠️  APT update failed - check mirror compatibility${NC}"
+        fi
+      fi
+      
+      # Configure pip if PyPI supported
+      if [[ "$has_pypi" == true ]]; then
+        echo -e "\n${YELLOW}⚙️  Configuring pip for PyPI...${NC}"
+        mkdir -p "$HOME/.pip"
+        clean_url="${mirror_url%/}"
+        
+        cat > "$HOME/.pip/pip.conf" << EOF
+[global]
+index-url = $clean_url/pypi/simple
+trusted-host = $(echo "$clean_url" | sed 's|https\?://||' | cut -d'/' -f1)
+
+[install]
+trusted-host = $(echo "$clean_url" | sed 's|https\?://||' | cut -d'/' -f1)
+EOF
+        
+        echo -e "${GREEN}✅ pip configured (~/.pip/pip.conf)${NC}"
+      fi
+      
+      # Configure npm if npm supported
+      if [[ "$has_npm" == true ]]; then
+        echo -e "\n${YELLOW}⚙️  Configuring npm...${NC}"
+        clean_url="${mirror_url%/}"
+        npm config set registry "$clean_url/npm/" 2>/dev/null
+        echo -e "${GREEN}✅ npm configured${NC}"
+      fi
+      
+      break
+    fi
+  done
+  
+  echo -e "\n${GREEN}${BOLD}✅ Configuration completed successfully!${NC}"
+  echo -e "${BLUE}📁 Backups saved to: $BACKUP_DIR${NC}"
+  echo -e "${YELLOW}💡 To restore: ./mirror_config_backup.sh --restore${NC}\n"
+}
+
+# Manual mirror selection function
+function show_manual_selection() {
+  echo -e "\n${BLUE}${BOLD}"
+  echo "╔═══════════════════════════════════════════════════════════╗"
+  echo "║           📋 ALL AVAILABLE MIRRORS IN IRAN               ║"
+  echo "╚═══════════════════════════════════════════════════════════╝"
+  echo -e "${NC}\n"
+  
+  # Create sorted list by score
+  local sorted_all=$(for mirror in "${!MIRROR_SCORES[@]}"; do
+    echo "${MIRROR_SCORES[$mirror]}|$mirror"
+  done | sort -rn)
+  
+  local index=1
+  declare -A INDEX_TO_MIRROR
+  
+  while IFS='|' read -r score mirror_name; do
+    INDEX_TO_MIRROR[$index]="$mirror_name"
+    
+    success=${MIRROR_SUCCESS_COUNTS[$mirror_name]}
+    total=${MIRROR_TOTAL_COUNTS[$mirror_name]}
+    latency=${MIRROR_LATENCIES[$mirror_name]}
+    success_rate=$(echo "scale=1; ($success * 100) / $total" | bc)
+    
+    # Format number with leading space for alignment
+    printf " ${BOLD}%2d)${NC} %-30s ${CYAN}Score: %3d${NC} | ${GREEN}%4dms${NC} | ${GREEN}%5.1f%%${NC}\n" \
+      "$index" "$mirror_name" "$score" "$latency" "$success_rate"
+    
+    ((index++))
+  done <<< "$sorted_all"
+  
+  echo ""
+  echo -e "${BOLD}${YELLOW} 0)${NC} Cancel and exit\n"
+  
+  # Get user selection
+  while true; do
+    read -p "$(echo -e ${BOLD}${GREEN}"Select mirror number (0-$((index-1))): "${NC})" selection
+    
+    # Validate input
+    if [[ "$selection" =~ ^[0-9]+$ ]]; then
+      if [[ "$selection" == "0" ]]; then
+        echo -e "\n${BLUE}ℹ️  Configuration cancelled.${NC}\n"
+        return 1
+      elif [[ "$selection" -ge 1 ]] && [[ "$selection" -lt "$index" ]]; then
+        local selected_mirror="${INDEX_TO_MIRROR[$selection]}"
+        local selected_url="${MIRROR_URLS[$selected_mirror]}"
+        
+        echo -e "\n${CYAN}📌 Selected: ${BOLD}$selected_mirror${NC}"
+        echo -e "${YELLOW}   URL: $selected_url${NC}\n"
+        
+        read -p "$(echo -e ${BOLD}"Confirm configuration? (y/n): "${NC})" confirm
+        
+        if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
+          configure_system_mirrors "$selected_url" "$selected_mirror"
+          return 0
+        else
+          echo -e "\n${BLUE}ℹ️  Configuration cancelled.${NC}\n"
+          return 1
+        fi
+      else
+        echo -e "${RED}Invalid selection. Please enter a number between 0 and $((index-1)).${NC}"
+      fi
+    else
+      echo -e "${RED}Invalid input. Please enter a number.${NC}"
+    fi
+  done
+}
+
 # Ask user if they want to configure the best mirror
 if [[ -n "$best_mirror_name" ]]; then
   echo -e "${BOLD}${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
   echo -e "${BOLD}🏆 Best Mirror: ${CYAN}$best_mirror_name${NC}"
   echo -e "${BOLD}${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
   
-  echo -e "${YELLOW}📝 Note: Auto-configuration will modify system files (backups will be created)${NC}"
-  echo -e "${YELLOW}   - /etc/apt/sources.list (for Ubuntu/Debian packages)${NC}"
-  echo -e "${YELLOW}   - ~/.pip/pip.conf (for Python packages)${NC}"
-  echo -e "${YELLOW}   - ~/.npmrc (for Node.js packages)${NC}\n"
+  echo -e "${YELLOW}📝 Auto-configuration options:${NC}"
+  echo -e "${YELLOW}   - APT (Ubuntu/Debian): /etc/apt/sources.list${NC}"
+  echo -e "${YELLOW}   - pip (Python): ~/.pip/pip.conf${NC}"
+  echo -e "${YELLOW}   - npm (Node.js): ~/.npmrc${NC}"
+  echo -e "${YELLOW}   - Automatic backup before changes${NC}\n"
   
-  read -p "$(echo -e ${BOLD}${GREEN}"Do you want to configure this mirror as your default? (y/n): "${NC})" choice
+  echo -e "${BOLD}${CYAN}Choose an option:${NC}"
+  echo -e " ${BOLD}1)${NC} Configure ${GREEN}$best_mirror_name${NC} (Recommended)"
+  echo -e " ${BOLD}2)${NC} Choose manually from all mirrors"
+  echo -e " ${BOLD}3)${NC} Skip configuration\n"
   
-  if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
-    echo -e "\n${CYAN}🔧 Auto-configuration feature coming soon!${NC}"
-    echo -e "${CYAN}   For now, please manually configure: $best_mirror_url${NC}\n"
-    
-    # TODO: Implement auto-configuration
-    # configure_system_mirrors "$best_mirror_url" "$best_mirror_name"
-  else
-    echo -e "\n${BLUE}ℹ️  No changes made to system configuration.${NC}\n"
-  fi
+  read -p "$(echo -e ${BOLD}${GREEN}"Your choice (1-3): "${NC})" choice
+  
+  case "$choice" in
+    1)
+      echo -e "\n${CYAN}🔧 Configuring best mirror: $best_mirror_name${NC}"
+      configure_system_mirrors "$best_mirror_url" "$best_mirror_name"
+      ;;
+    2)
+      show_manual_selection
+      ;;
+    3)
+      echo -e "\n${BLUE}ℹ️  No changes made to system configuration.${NC}\n"
+      ;;
+    *)
+      echo -e "\n${RED}Invalid choice. No changes made.${NC}\n"
+      ;;
+  esac
 fi
 
 echo -e "${GREEN}✅ Scan completed!${NC}\n"

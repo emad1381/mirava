@@ -146,3 +146,47 @@ mirrors:
       - Maven (maven central)
       - Others (Can be added)
 
+  - name: ParsPack
+    url: https://debian.parspack.com
+    description: ParsPack Debian mirror with multiple architecture support
+    packages:
+      - Debian
+      - Ubuntu
+
+  - name: Petiak
+    url: https://archive.debian.petiak.ir
+    description: Petiak mirror for Debian and Ubuntu distributions
+    packages:
+      - Debian
+      - Ubuntu
+
+  - name: Aminidc  
+    url: https://mirror.aminidc.com
+    description: Aminidc mirror supporting Debian and Ubuntu
+    packages:
+      - Debian
+      - Ubuntu
+
+  - name: Faraso
+    url: https://mirror.faraso.org
+    description: Faraso Ubuntu mirror
+    packages:
+      - Ubuntu
+
+  - name: Kernel.ir
+    url: https://mirror.kernel.ir
+    description: Kernel.ir comprehensive mirror for Ubuntu and other distributions
+    packages:
+      - Ubuntu
+
+  - name: Asis.ai
+    url: https://centos.asis.ai
+    description: Public CentOS mirror in Iran
+    packages:
+      - CentOS
+
+  - name: Ubuntu IR Archive
+    url: https://ir.archive.ubuntu.com
+    description: Official Ubuntu mirror for Iran with fast local access
+    packages:
+      - Ubuntu
