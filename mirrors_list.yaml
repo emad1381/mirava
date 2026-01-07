@@ -49,6 +49,12 @@ mirrors:
       - Debian
       - Ubuntu
 
+  - name: Avalicense
+    url: https://ubuntu.avalicense.com
+    description: Avalicense Ubuntu mirror
+    packages:
+      - Ubuntu
+
   - name: Zero & One Cloud
     url: https://mirror.0-1.cloud
     description: High-speed 100GE mirror with IPv6 support and 12ms ping
@@ -167,6 +173,14 @@ mirrors:
 
   # International Mirrors (Backup when international connectivity available)
   # Only fastest and most reliable mirrors included
+  
+  # Neighboring Country
+  - name: Armenia (AsNet)
+    url: https://mirrors.asnet.am
+    description: Fast mirror in Armenia - closest neighbor to Iran
+    packages:
+      - Ubuntu
+      - Debian
   
   # Russia - Closest working international mirror
   - name: Russia Yandex
